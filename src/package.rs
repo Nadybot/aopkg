@@ -63,13 +63,22 @@ fn read_file(mut file: ZipFile) -> ParseResult<String> {
 fn parse(reader: impl Read + Seek) -> ParseResult<Package> {
     let mut zip = ZipArchive::new(reader)?;
 
+    let names: Vec<&str> = zip.file_names().collect();
+    let mut prepend = String::new();
+    for name in names.clone() {
+        if names.iter().all(|i| i.starts_with(name) || *i == name) {
+            prepend = name.to_string();
+            break;
+        }
+    }
+
     let readme_md = {
-        let readme = zip.by_name("README.md")?;
+        let readme = zip.by_name(&format!("{}README.md", prepend))?;
         read_file(readme)?
     };
 
     let manifest_str = {
-        let manifest = zip.by_name("aopkg.toml")?;
+        let manifest = zip.by_name(&format!("{}aopkg.toml", prepend))?;
         read_file(manifest)?
     };
 
