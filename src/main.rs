@@ -276,7 +276,7 @@ async fn main() -> std::io::Result<()> {
 
     let m = Migrator::new(Path::new("./migrations")).await.unwrap();
 
-    let pool = SqlitePool::connect("sqlite:aopkg.db")
+    let pool = SqlitePool::connect(&var("DATABASE_URL").unwrap())
         .await
         .expect("Could not connect to sqlite db");
 

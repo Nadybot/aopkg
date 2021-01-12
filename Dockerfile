@@ -7,7 +7,6 @@ RUN apk upgrade && \
 WORKDIR /build
 
 COPY Cargo.toml Cargo.lock ./
-COPY .cargo ./.cargo/
 
 RUN mkdir src/
 RUN echo 'fn main() {}' > ./src/main.rs
