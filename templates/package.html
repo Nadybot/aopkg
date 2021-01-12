@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-light p-5 jumbotron">
+    <h1 class="display-4">{{ package.name }} {{ package.version }}</h1>
+    <p>{{ package.short_description }}</p>
+</div>
+
+
+<div class="alert alert-info mt-2" role="alert">
+    This package requires {{ package.bot_type }} <code>{{ package.bot_version }}</code>.
+    <a class="btn btn-primary top-0 end-0 position-absolute download" href="/api/packages/{{ package.name }}/{{ package.version }}/download">Download
+        it!</a>
+</div>
+
+<div class="description mt-3 mb-5">{{ package.description | safe }}</div>
+{% endblock %}

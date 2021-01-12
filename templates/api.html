@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-light p-5 jumbotron">
+    <h1 class="display-2">API</h1>
+    <p>How to programmatically utilize our API.</p>
+</div>
+
+<div class="faq mt-3 mb-5">
+    <h3><code>/api/packages/{name}/{version}</code> (GET)</h3>
+    <p>Returns a single JSON object for the specific version of the package.</p>
+
+    <h3><code>/api/packages/{name}</code> (GET)</h3>
+    <p>Returns an array of JSON objects for all versions of the package in descending order.</p>
+
+    <h3><code>/api/packages</code> (GET)</h3>
+    <p>Returns an array of JSON objects for all packages and all versions, grouped by package.</p>
+
+    <h3><code>/api/packages/{name}/{version}/download</code> (GET)</h3>
+    <p>Direct download link to the package ZIP contents.</p>
+</div>
+{% endblock %}

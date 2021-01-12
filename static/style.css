@@ -1,0 +1,8 @@
+.jumbotron p {
+    font-size: 21px;
+    font-weight: bolder;
+}
+
+.download {
+    transform: translate(-8%, 25%) !important;
+}

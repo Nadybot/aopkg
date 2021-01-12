@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-light p-5 jumbotron">
+    <h1 class="display-4">{{ name }} Version History</h1>
+    <p>Past releases available for download.</p>
+</div>
+
+<table class="table mt-3 mb-5">
+    <thead class="table-dark">
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Author</th>
+            <th scope="col">Version</th>
+            <th scope="col">Bot</th>
+            <th scope="col">Bot Version</th>
+            <th scope="col">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for package in packages %}
+        <tr>
+            <td><a href="/packages/{{ package.name }}/{{ package.version }}">{{ package.name }}</a></td>
+            <td>{{ package.author }}</td>
+            <td>{{ package.version }}</td>
+            <td>{{ package.bot_type }}</td>
+            <td>{{ package.bot_version }}</td>
+            <td>{{ package.short_description }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

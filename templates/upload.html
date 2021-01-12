@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-light p-5 jumbotron">
+    <h1 class="display-2">Upload</h1>
+    <p>Upload a new package or a new version for an existing one.</p>
+</div>
+
+<div class="upload mt-3 mb-5">
+    <label for="zipFile" class="form-label">Choose a ZIP</label>
+    <div class="input-group">
+        <input class="form-control" type="file" id="zipFile" accept=".zip">
+        <button role="button" class="btn btn-primary" id="submit">Upload</button>
+    </div>
+</div>
+
+<script>
+    document.getElementById("submit").onclick = async (event) => {
+        let fileList = document.getElementById("zipFile").files;
+        if (fileList) {
+            let reader = new FileReader();
+            reader.onloadend = async (e) => {
+                await fetch("/upload", {
+                    method: "POST",
+                    body: e.target.result
+                });
+                window.location = "/";
+            }
+
+            reader.readAsArrayBuffer(fileList[0]);
+        }
+    }
+</script>
+{% endblock %}
