@@ -21,9 +21,9 @@ markdown = "0.3"
 semver = { version = "0.11", default-features = false, features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-sqlx = { git = "https://github.com/ant32/sqlx.git", branch = "tokio-1.0", default-features = false, features = ["runtime-actix-rustls", "sqlite", "macros", "migrate"] }
+sqlx = { git = "https://github.com/launchbadge/sqlx.git", default-features = false, features = ["runtime-actix-rustls", "sqlite", "macros", "migrate"] }
 toml = "0.5"
-tokio = { version = "1.0", default-features = false }
+tokio = { version = "1.1", default-features = false }
 zip = "0.5"
 
 [profile.release]

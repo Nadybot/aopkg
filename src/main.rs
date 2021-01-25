@@ -280,6 +280,13 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("Could not connect to sqlite db");
 
+    let mut conn = pool.acquire().await.unwrap();
+    conn.create_collation("semver_collation", |a, b| {
+        Version::parse(a).unwrap().cmp(&Version::parse(b).unwrap())
+    })
+    .unwrap();
+    drop(conn);
+
     m.run(&pool).await.expect("Migration failed");
 
     HttpServer::new(move || {

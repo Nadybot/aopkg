@@ -5,7 +5,7 @@ use crate::{
 
 use actix_web::web::{Bytes, Data};
 use semver::Version;
-use sqlx::{sqlite::SqliteDone, Error, SqlitePool};
+use sqlx::{sqlite::SqliteQueryResult, Error, SqlitePool};
 use tokio::fs::write;
 
 use std::path::Path;
@@ -45,7 +45,7 @@ pub async fn get_latest_package(
     name: String,
 ) -> Result<PackageManifestDb, Error> {
     let data: PackageManifestDb = sqlx::query_as(
-        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name" FROM versions v JOIN packages p ON (v."package"=p."id") WHERE p."name"=? ORDER BY v."id" DESC LIMIT 1;"#,
+        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name" FROM versions v JOIN packages p ON (v."package"=p."id") WHERE p."name"=? ORDER BY v."version" DESC LIMIT 1;"#,
     ).bind(&name).fetch_one(&**pool).await?;
 
     Ok(data)
@@ -56,7 +56,7 @@ pub async fn get_package_versions(
     name: &str,
 ) -> Result<Vec<PackageManifestDb>, Error> {
     let data: Vec<PackageManifestDb> = sqlx::query_as(
-        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name" FROM versions v JOIN packages p ON (v."package"=p."id") WHERE p."name"=? ORDER BY v."id" DESC;"#,
+        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name" FROM versions v JOIN packages p ON (v."package"=p."id") WHERE p."name"=? ORDER BY v."version" DESC;"#,
     ).bind(&name).fetch_all(&**pool).await?;
 
     Ok(data)
@@ -64,7 +64,7 @@ pub async fn get_package_versions(
 
 pub async fn get_all_packages(pool: Data<SqlitePool>) -> Result<Vec<PackageManifestDb>, Error> {
     let data: Vec<PackageManifestDb> = sqlx::query_as(
-        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name" FROM versions v JOIN packages p ON (v."package"=p."id") ORDER BY v."package", v."id" DESC;"#,
+        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name" FROM versions v JOIN packages p ON (v."package"=p."id") ORDER BY v."package", v."version" DESC;"#,
     ).fetch_all(&**pool).await?;
 
     Ok(data)
@@ -72,7 +72,7 @@ pub async fn get_all_packages(pool: Data<SqlitePool>) -> Result<Vec<PackageManif
 
 pub async fn get_latest_packages(pool: Data<SqlitePool>) -> Result<Vec<PackageManifestDb>, Error> {
     let data: Vec<PackageManifestDb> = sqlx::query_as(
-        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name" FROM versions v JOIN packages p ON (v."package"=p."id") GROUP BY v."package" HAVING MAX(v."id");"#,
+        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name" FROM versions v JOIN packages p ON (v."package"=p."id") GROUP BY v."package", v."bot_type" HAVING MAX(v."version");"#,
     ).fetch_all(&**pool).await?;
 
     Ok(data)
@@ -83,7 +83,7 @@ pub async fn create_package(
     package: Package,
     owner_id: i64,
     file: Bytes,
-) -> Result<SqliteDone, Error> {
+) -> Result<SqliteQueryResult, Error> {
     let version = package.manifest.version.to_string();
     let bot_version = package.manifest.bot_version.to_string();
     let bot_type = package.manifest.bot_type.to_string();
