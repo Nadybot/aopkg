@@ -6,6 +6,9 @@
     <p>Upload a new package or a new version for an existing one.</p>
 </div>
 
+<div id="popup-here">
+</div>
+
 <div class="upload mt-3 mb-5">
     <label for="zipFile" class="form-label">Choose a ZIP</label>
     <div class="input-group">
@@ -20,11 +23,20 @@
         if (fileList) {
             let reader = new FileReader();
             reader.onloadend = async (e) => {
-                await fetch("/upload", {
+                let response = await fetch("/upload", {
                     method: "POST",
                     body: e.target.result
                 });
-                window.location = "/";
+                if (response.status == 201) {
+                    window.location = "/";
+                } else if (response.status == 403) {
+                    document.getElementById("popup-here").innerHTML = `<div class="alert alert-danger" role="alert">You are not the owner of this package.</div>`;
+                } else if (response.status == 401) {
+                    document.getElementById("popup-here").innerHTML = `<div class="alert alert-danger" role="alert">You are not logged in.</div>`;
+                } else {
+                    let content = await response.text();
+                    document.getElementById("popup-here").innerHTML = `<div class="alert alert-danger" role="alert">ZIP issue: ${content}</div>`;
+                }
             }
 
             reader.readAsArrayBuffer(fileList[0]);
