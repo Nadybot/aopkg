@@ -50,6 +50,7 @@ pub struct PackageManifest {
     pub author: String,
     pub bot_type: BotType,
     pub bot_version: VersionReq,
+    pub github: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -59,8 +60,10 @@ pub struct PackageManifestDb {
     pub short_description: String,
     pub version: Version,
     pub author: String,
+    pub owner: i64,
     pub bot_type: BotType,
     pub bot_version: VersionReq,
+    pub github: Option<String>,
 }
 
 #[derive(FromRow, Decode)]
@@ -74,6 +77,7 @@ where
     R: Row,
     &'s str: ColumnIndex<R>,
     String: Type<R::Database> + Decode<'r, R::Database>,
+    i64: Type<R::Database> + Decode<'r, R::Database>,
 {
     #[inline]
     fn from_row(row: &'r R) -> Result<Self, SqlxError> {
@@ -84,6 +88,8 @@ where
         let author: String = row.try_get("author")?;
         let bot_type: String = row.try_get("bot_type")?;
         let bot_version: String = row.try_get("bot_version")?;
+        let github: Option<String> = row.try_get("github")?;
+        let owner: i64 = row.try_get("owner")?;
 
         Ok(Self {
             name,
@@ -91,8 +97,10 @@ where
             short_description,
             version: Version::parse(&version).unwrap(),
             author,
+            owner,
             bot_type: BotType::try_from(bot_type).unwrap(),
             bot_version: VersionReq::parse(&bot_version).unwrap(),
+            github,
         })
     }
 }
@@ -126,6 +134,7 @@ fn test_loads_valid() {
         author: String::from("Nadyita <nadyita@hodorraid.org>"),
         bot_type: BotType::Nadybot,
         bot_version: VersionReq::parse("^5.0.0").unwrap(), // Op is not exposed, cannot hardcode
+        github: None,
     };
     assert_eq!(load_package_manifest(input).unwrap(), expected);
 }

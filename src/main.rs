@@ -5,9 +5,10 @@ use actix_web::{
     Responder,
 };
 use askama::Template;
+use log::debug;
 use semver::Version;
 use serde_json::to_string_pretty;
-use sqlx::{migrate::Migrator, SqlitePool};
+use sqlx::{migrate::Migrator, sqlite::SqlitePoolOptions, SqlitePool};
 
 use std::{
     env::{set_var, var},
@@ -21,6 +22,7 @@ mod manifest;
 mod oauth;
 mod package;
 mod templates;
+mod webhook;
 
 #[post("/upload")]
 async fn upload_package(
@@ -266,26 +268,74 @@ async fn redirected_back(
     HttpResponse::Found().header("Location", "/").await
 }
 
+#[post("/webhook")]
+async fn github_webhook(
+    web::Json(data): web::Json<webhook::GithubReleaseWebhook>,
+    client: web::Data<Client>,
+    pool: web::Data<SqlitePool>,
+) -> impl Responder {
+    if data.action != "published" {
+        debug!("{:?}: Not a publish release event, ignoring.", data);
+        return HttpResponse::NoContent().body("").await;
+    }
+
+    let db_pkg = db::get_package_by_repo(pool.clone(), data.repository.full_name, data.sender.id)
+        .await
+        .expect("DB error");
+
+    if let Some(p) = db_pkg {
+        if let Ok(payload) = webhook::get_latest_release(&p.github.unwrap(), client).await {
+            let cur = Cursor::new(payload.clone());
+
+            match package::try_parse(cur).await {
+                Ok(pkg) => {
+                    if !db::validate_data(&pkg) {
+                        return HttpResponse::BadRequest()
+                            .body("Package format OK, but parts too long")
+                            .await;
+                    }
+
+                    return match db::create_package(pool, pkg, p.owner, payload).await {
+                        Ok(_) => HttpResponse::Created().await,
+                        Err(_) => HttpResponse::Forbidden().await,
+                    };
+                }
+                Err(e) => {
+                    debug!("Error parsing package: {:?}", e);
+                    return HttpResponse::BadRequest().body(format!("{:?}", e)).await;
+                }
+            };
+        } else {
+            return HttpResponse::NotFound().body("no release found").await;
+        }
+    } else {
+        return HttpResponse::NotFound().body("no package found").await;
+    }
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
     if var("RUST_LOG").is_err() {
-        set_var("RUST_LOG", "actix_web=debug,actix_server=info");
+        set_var("RUST_LOG", "info");
     }
     env_logger::init();
 
     let m = Migrator::new(Path::new("./migrations")).await.unwrap();
 
-    let pool = SqlitePool::connect(&var("DATABASE_URL").unwrap())
+    let pool = SqlitePoolOptions::new()
+        .after_connect(|conn| {
+            Box::pin(async move {
+                conn.create_collation("semver_collation", |a, b| {
+                    Version::parse(a).unwrap().cmp(&Version::parse(b).unwrap())
+                })?;
+
+                Ok(())
+            })
+        })
+        .connect(&var("DATABASE_URL").unwrap())
         .await
         .expect("Could not connect to sqlite db");
-
-    let mut conn = pool.acquire().await.unwrap();
-    conn.create_collation("semver_collation", |a, b| {
-        Version::parse(a).unwrap().cmp(&Version::parse(b).unwrap())
-    })
-    .unwrap();
-    drop(conn);
 
     m.run(&pool).await.expect("Migration failed");
 
@@ -315,6 +365,7 @@ async fn main() -> std::io::Result<()> {
             .service(show_package_version_data)
             .service(login)
             .service(redirected_back)
+            .service(github_webhook)
     })
     .bind("0.0.0.0:7575")?
     .run()
