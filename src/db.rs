@@ -13,7 +13,7 @@ use std::path::Path;
 pub fn validate_data(package: &Package) -> bool {
     let gh = package.manifest.github.clone();
     if let Some(g) = gh {
-        if g.len() > 40 || g.split("/").collect::<Vec<_>>().len() != 2 {
+        if g.len() > 40 || g.split('/').count() != 2 {
             return false;
         }
     }
