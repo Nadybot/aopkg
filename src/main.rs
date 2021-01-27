@@ -346,7 +346,7 @@ async fn main() -> std::io::Result<()> {
             .data(pool.clone())
             .data(client)
             .wrap(middleware::Logger::default())
-            .app_data(web::PayloadConfig::new(5242880))
+            .app_data(web::PayloadConfig::new(15728640))
             .wrap(CookieSession::signed(
                 var("COOKIE_SECRET").unwrap().as_bytes(),
             ))

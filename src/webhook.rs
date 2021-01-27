@@ -79,8 +79,8 @@ pub async fn get_latest_release(repo: &str, client: Data<Client>) -> Result<Byte
                 .send()
                 .await?
                 .body()
+                .limit(15728640)
                 .await?;
-            debug!("Received zip: {:?}", bytes);
             Ok(bytes)
         } else {
             Err(Error::from(()))
