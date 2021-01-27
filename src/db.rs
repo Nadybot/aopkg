@@ -23,7 +23,7 @@ pub fn validate_data(package: &Package) -> bool {
         && package.manifest.description.len() <= 100
         && package.description.len() <= 8000
         && package.manifest.version.to_string().len() <= 12
-        && package.manifest.bot_version.to_string().len() <= 24
+        && package.manifest.bot_version.to_string().len() <= 50
         && package.manifest.bot_type.to_string().len() <= 15
         && package
             .manifest
