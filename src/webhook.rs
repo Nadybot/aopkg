@@ -41,8 +41,8 @@ pub struct GithubReleaseWebhook {
 pub async fn get_latest_release(repo: &str, client: Data<Client>) -> Result<Bytes, Error> {
     let data: Vec<Release> = client
         .get(&format!("https://api.github.com/repos/{}/releases", repo))
-        .header("Accept", "application/vnd.github.v3+json")
-        .header("User-Agent", "aopkg")
+        .insert_header(("Accept", "application/vnd.github.v3+json"))
+        .insert_header(("User-Agent", "aopkg"))
         .send()
         .await?
         .json()
@@ -62,7 +62,11 @@ pub async fn get_latest_release(repo: &str, client: Data<Client>) -> Result<Byte
         };
         debug!("Getting webhook zip from {}", url);
 
-        let resp = client.get(url).header("User-Agent", "aopkg").send().await?;
+        let resp = client
+            .get(url)
+            .insert_header(("User-Agent", "aopkg"))
+            .send()
+            .await?;
         let location = resp.headers().get("Location");
 
         debug!(
@@ -75,7 +79,7 @@ pub async fn get_latest_release(repo: &str, client: Data<Client>) -> Result<Byte
         if let Some(url) = location {
             let bytes = client
                 .get(url.to_str().unwrap())
-                .header("User-Agent", "aopkg")
+                .insert_header(("User-Agent", "aopkg"))
                 .send()
                 .await?
                 .body()

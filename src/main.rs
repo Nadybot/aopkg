@@ -55,10 +55,10 @@ async fn upload_package(
 
 #[get("/api/packages/{name}/{version}")]
 async fn get_package_data(
-    web::Path((name, version)): web::Path<(String, Version)>,
+    path: web::Path<(String, Version)>,
     pool: web::Data<SqlitePool>,
 ) -> impl Responder {
-    let package = db::get_package_with_version(pool, name, version).await;
+    let package = db::get_package_with_version(pool, &path.0, &path.1).await;
 
     match package {
         Ok(pkg) => {
@@ -73,7 +73,7 @@ async fn get_package_data(
 
 #[get("/api/packages/{name}")]
 async fn get_package_versions(
-    web::Path(name): web::Path<String>,
+    name: web::Path<String>,
     pool: web::Data<SqlitePool>,
 ) -> impl Responder {
     let packages = db::get_package_versions(pool, &name)
@@ -100,18 +100,16 @@ async fn get_all_package_data(pool: web::Data<SqlitePool>) -> impl Responder {
 }
 
 #[get("/api/packages/{name}/{version}/download")]
-async fn download_package(
-    req: HttpRequest,
-    web::Path((name, version)): web::Path<(String, Version)>,
-) -> impl Responder {
-    if name
+async fn download_package(req: HttpRequest, path: web::Path<(String, Version)>) -> impl Responder {
+    if path
+        .0
         .chars()
         .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
     {
-        let path = Path::new("data").join(format!("{}-{}.zip", name, version));
+        let path = Path::new("data").join(format!("{}-{}.zip", path.0, path.1));
 
         match NamedFile::open(path) {
-            Ok(f) => f.into_response(&req),
+            Ok(f) => Ok(f.into_response(&req)),
             Err(_) => HttpResponse::NotFound().await,
         }
     } else {
@@ -168,11 +166,11 @@ async fn upload_view(session: Session) -> impl Responder {
 
 #[get("/packages/{name}/{version}")]
 async fn show_package_data(
-    web::Path((name, version)): web::Path<(String, Version)>,
+    path: web::Path<(String, Version)>,
     pool: web::Data<SqlitePool>,
     session: Session,
 ) -> impl Responder {
-    let package = db::get_package_with_version(pool, name, version).await;
+    let package = db::get_package_with_version(pool, &path.0, &path.1).await;
     let logged_in = session.get::<i64>("id")?.is_some();
 
     match package {
@@ -195,11 +193,11 @@ async fn show_package_data(
 
 #[get("/packages/{name}/latest")]
 async fn show_latest_package_data(
-    web::Path(name): web::Path<String>,
+    name: web::Path<String>,
     pool: web::Data<SqlitePool>,
     session: Session,
 ) -> impl Responder {
-    let package = db::get_latest_package(pool, name).await;
+    let package = db::get_latest_package(pool, &name).await;
     let logged_in = session.get::<i64>("id")?.is_some();
 
     match package {
@@ -222,7 +220,7 @@ async fn show_latest_package_data(
 
 #[get("/packages/{name}")]
 async fn show_package_version_data(
-    web::Path(name): web::Path<String>,
+    name: web::Path<String>,
     pool: web::Data<SqlitePool>,
     session: Session,
 ) -> impl Responder {
@@ -251,13 +249,13 @@ async fn show_package_version_data(
 #[get("/login")]
 async fn login() -> impl Responder {
     HttpResponse::Found()
-        .header("Location", oauth::OAUTH_URL.clone())
+        .append_header(("Location", oauth::OAUTH_URL.clone()))
         .await
 }
 
 #[get("/github")]
 async fn redirected_back(
-    web::Query(code): web::Query<oauth::QueryGithub>,
+    code: web::Query<oauth::QueryGithub>,
     client: web::Data<Client>,
     session: Session,
 ) -> impl Responder {
@@ -265,7 +263,7 @@ async fn redirected_back(
     let user_id = oauth::get_user(&access_token, client).await?;
     session.set("id", user_id)?;
 
-    HttpResponse::Found().header("Location", "/").await
+    HttpResponse::Found().append_header(("Location", "/")).await
 }
 
 #[post("/webhook")]
@@ -345,8 +343,8 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .data(pool.clone())
             .data(client)
-            .wrap(middleware::Logger::default())
             .app_data(web::PayloadConfig::new(15728640))
+            .wrap(middleware::Logger::default())
             .wrap(CookieSession::signed(
                 var("COOKIE_SECRET").unwrap().as_bytes(),
             ))

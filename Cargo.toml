@@ -27,6 +27,12 @@ toml = "0.5"
 tokio = { version = "1.1", default-features = false }
 zip = "0.5"
 
+[patch.crates-io]
+awc = { git = "https://github.com/Gelbpunkt/actix-web", branch = "fix-payload-config" }
+actix-files = { git = "https://github.com/Gelbpunkt/actix-web", branch = "fix-payload-config" }
+actix-http = { git = "https://github.com/Gelbpunkt/actix-web", branch = "fix-payload-config" }
+actix-web = { git = "https://github.com/Gelbpunkt/actix-web", branch = "fix-payload-config" }
+
 [profile.release]
 codegen-units = 1
 debug = false

@@ -19,8 +19,7 @@ dependencies = [
 [[package]]
 name = "actix-files"
 version = "0.6.0-beta.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee05284458ab77468c0864f734313574168dcf68053bcf5c42a66529e2bed6b9"
+source = "git+https://github.com/Gelbpunkt/actix-web?branch=fix-payload-config#ec95b9886d750953b7fb39304652e3cdd80b7b6a"
 dependencies = [
  "actix-service",
  "actix-web",
@@ -39,28 +38,25 @@ dependencies = [
 [[package]]
 name = "actix-http"
 version = "3.0.0-beta.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80068c81f352ca6346c851461c41dc946160850f1b2f806af7bfa0820b7875c8"
+source = "git+https://github.com/Gelbpunkt/actix-web?branch=fix-payload-config#ec95b9886d750953b7fb39304652e3cdd80b7b6a"
 dependencies = [
  "actix-codec",
  "actix-rt",
  "actix-service",
- "actix-threadpool",
  "actix-tls",
  "actix-utils",
+ "ahash 0.6.3",
  "base64 0.13.0",
  "bitflags",
  "bytes 1.0.1",
  "bytestring",
  "cookie",
- "copyless",
  "derive_more",
  "either",
  "encoding_rs",
  "futures-channel",
  "futures-core",
  "futures-util",
- "fxhash",
  "h2",
  "http",
  "httparse",
@@ -79,6 +75,7 @@ dependencies = [
  "serde_urlencoded",
  "sha-1",
  "slab",
+ "smallvec",
  "time 0.2.25",
 ]
 
@@ -223,8 +220,7 @@ dependencies = [
 [[package]]
 name = "actix-web"
 version = "4.0.0-beta.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "262a62a6bc81bc809dc27a8369542d332577d6f9119ae25b038b8587e7d4a7c6"
+source = "git+https://github.com/Gelbpunkt/actix-web?branch=fix-payload-config#ec95b9886d750953b7fb39304652e3cdd80b7b6a"
 dependencies = [
  "actix-codec",
  "actix-http",
@@ -233,7 +229,6 @@ dependencies = [
  "actix-rt",
  "actix-server",
  "actix-service",
- "actix-threadpool",
  "actix-tls",
  "actix-utils",
  "actix-web-codegen",
@@ -241,6 +236,7 @@ dependencies = [
  "awc",
  "bytes 1.0.1",
  "derive_more",
+ "either",
  "encoding_rs",
  "futures-core",
  "futures-util",
@@ -490,8 +486,7 @@ checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 [[package]]
 name = "awc"
 version = "3.0.0-beta.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "180bcec5977648b3c6ca41589399d160cc57a50eeeb407a666d0153740a1c621"
+source = "git+https://github.com/Gelbpunkt/actix-web?branch=fix-payload-config#ec95b9886d750953b7fb39304652e3cdd80b7b6a"
 dependencies = [
  "actix-codec",
  "actix-http",
@@ -675,12 +670,6 @@ dependencies = [
  "time 0.2.25",
  "version_check 0.9.2",
 ]
-
-[[package]]
-name = "copyless"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2df960f5d869b2dd8532793fde43eb5427cceb126c929747a26823ab0eeb536"
 
 [[package]]
 name = "cpuid-bool"
@@ -966,15 +955,6 @@ dependencies = [
  "proc-macro-hack",
  "proc-macro-nested",
  "slab",
-]
-
-[[package]]
-name = "fxhash"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c31b6d751ae2c7f11320402d34e41349dd1016f8d5d45e48c4312bc8625af50c"
-dependencies = [
- "byteorder",
 ]
 
 [[package]]

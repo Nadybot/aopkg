@@ -39,7 +39,7 @@ struct AccessToken {
 pub async fn get_access_token(code: &str, client: Data<Client>) -> Result<String, Error> {
     let data: AccessToken = client
         .get(access_token_url(code))
-        .header("Accept", "application/json")
+        .insert_header(("Accept", "application/json"))
         .send()
         .await?
         .json()
@@ -50,9 +50,9 @@ pub async fn get_access_token(code: &str, client: Data<Client>) -> Result<String
 pub async fn get_user(access_token: &str, client: Data<Client>) -> Result<i64, Error> {
     let data: User = client
         .get("https://api.github.com/user")
-        .header("Authorization", format!("token {}", access_token))
-        .header("Accept", "application/vnd.github.v3+json")
-        .header("User-Agent", "aopkg")
+        .insert_header(("Authorization", format!("token {}", access_token)))
+        .insert_header(("Accept", "application/vnd.github.v3+json"))
+        .insert_header(("User-Agent", "aopkg"))
         .send()
         .await?
         .json()

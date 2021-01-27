@@ -34,8 +34,8 @@ pub fn validate_data(package: &Package) -> bool {
 
 pub async fn get_package_with_version(
     pool: Data<SqlitePool>,
-    name: String,
-    version: Version,
+    name: &str,
+    version: &Version,
 ) -> Result<PackageManifestDb, Error> {
     let version_str = version.to_string();
 
@@ -48,7 +48,7 @@ pub async fn get_package_with_version(
 
 pub async fn get_latest_package(
     pool: Data<SqlitePool>,
-    name: String,
+    name: &str,
 ) -> Result<PackageManifestDb, Error> {
     let data: PackageManifestDb = sqlx::query_as(
         r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name", v."github", p."owner" FROM versions v JOIN packages p ON (v."package"=p."id") WHERE p."name"=? ORDER BY v."version" DESC LIMIT 1;"#,
