@@ -6,7 +6,7 @@ use crate::{
 use actix_web::web::{Bytes, Data};
 use semver::Version;
 use sqlx::{sqlite::SqliteQueryResult, Error, SqlitePool};
-use tokio::fs::write;
+use tokio::fs::{remove_file, write};
 
 use std::path::Path;
 
@@ -109,7 +109,10 @@ pub async fn create_package(
         "{}-{}.zip",
         &package.manifest.name, &package.manifest.version
     ));
-    write(path, file).await?;
+    if path.exists() {
+        remove_file(&path).await?;
+    }
+    write(&path, file).await?;
 
     let pkg: Option<PackageDb> =
         sqlx::query_as(r#"SELECT "id", "owner" FROM packages WHERE "name"=?;"#)
@@ -125,13 +128,19 @@ pub async fn create_package(
             p.id
         } else {
             sqlx::query(r#"INSERT INTO packages ("name", "owner") VALUES (?, ?);"#)
-                .bind(package.manifest.name)
+                .bind(&package.manifest.name)
                 .bind(owner_id)
                 .execute(&**pool)
                 .await?
                 .last_insert_rowid()
         }
     };
+
+    sqlx::query(r#"DELETE FROM versions WHERE "package"=? AND "version"=?;"#)
+        .bind(&pkg_id)
+        .bind(&version)
+        .execute(&**pool)
+        .await?;
 
     sqlx::query(
         r#"INSERT INTO versions ("package", "description", "short_description", "version", "author", "bot_type", "bot_version", "github") VALUES (?, ?, ?, ?, ?, ?, ?, ?);"#,
