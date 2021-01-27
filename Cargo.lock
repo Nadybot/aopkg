@@ -19,7 +19,7 @@ dependencies = [
 [[package]]
 name = "actix-files"
 version = "0.6.0-beta.1"
-source = "git+https://github.com/Gelbpunkt/actix-web?branch=fix-payload-config#ec95b9886d750953b7fb39304652e3cdd80b7b6a"
+source = "git+https://github.com/actix/actix-web?branch=fix/http_message_limit#58a4df3bbd4435e74cf062a7a0e3eead03713ac9"
 dependencies = [
  "actix-service",
  "actix-web",
@@ -38,7 +38,7 @@ dependencies = [
 [[package]]
 name = "actix-http"
 version = "3.0.0-beta.1"
-source = "git+https://github.com/Gelbpunkt/actix-web?branch=fix-payload-config#ec95b9886d750953b7fb39304652e3cdd80b7b6a"
+source = "git+https://github.com/actix/actix-web?branch=fix/http_message_limit#58a4df3bbd4435e74cf062a7a0e3eead03713ac9"
 dependencies = [
  "actix-codec",
  "actix-rt",
@@ -220,7 +220,7 @@ dependencies = [
 [[package]]
 name = "actix-web"
 version = "4.0.0-beta.1"
-source = "git+https://github.com/Gelbpunkt/actix-web?branch=fix-payload-config#ec95b9886d750953b7fb39304652e3cdd80b7b6a"
+source = "git+https://github.com/actix/actix-web?branch=fix/http_message_limit#58a4df3bbd4435e74cf062a7a0e3eead03713ac9"
 dependencies = [
  "actix-codec",
  "actix-http",
@@ -486,7 +486,7 @@ checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 [[package]]
 name = "awc"
 version = "3.0.0-beta.1"
-source = "git+https://github.com/Gelbpunkt/actix-web?branch=fix-payload-config#ec95b9886d750953b7fb39304652e3cdd80b7b6a"
+source = "git+https://github.com/actix/actix-web?branch=fix/http_message_limit#58a4df3bbd4435e74cf062a7a0e3eead03713ac9"
 dependencies = [
  "actix-codec",
  "actix-http",

@@ -28,10 +28,10 @@ tokio = { version = "1.1", default-features = false }
 zip = "0.5"
 
 [patch.crates-io]
-awc = { git = "https://github.com/Gelbpunkt/actix-web", branch = "fix-payload-config" }
-actix-files = { git = "https://github.com/Gelbpunkt/actix-web", branch = "fix-payload-config" }
-actix-http = { git = "https://github.com/Gelbpunkt/actix-web", branch = "fix-payload-config" }
-actix-web = { git = "https://github.com/Gelbpunkt/actix-web", branch = "fix-payload-config" }
+awc = { git = "https://github.com/actix/actix-web", branch = "fix/http_message_limit" }
+actix-files = { git = "https://github.com/actix/actix-web", branch = "fix/http_message_limit" }
+actix-http = { git = "https://github.com/actix/actix-web", branch = "fix/http_message_limit" }
+actix-web = { git = "https://github.com/actix/actix-web", branch = "fix/http_message_limit" }
 
 [profile.release]
 codegen-units = 1
