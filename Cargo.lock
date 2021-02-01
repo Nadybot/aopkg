@@ -19,7 +19,7 @@ dependencies = [
 [[package]]
 name = "actix-files"
 version = "0.6.0-beta.1"
-source = "git+https://github.com/actix/actix-web?branch=fix/http_message_limit#58a4df3bbd4435e74cf062a7a0e3eead03713ac9"
+source = "git+https://github.com/actix/actix-web?branch=master#51e54dac8b18ea0ac0b1d55f6a9d8af903e0e811"
 dependencies = [
  "actix-service",
  "actix-web",
@@ -38,7 +38,7 @@ dependencies = [
 [[package]]
 name = "actix-http"
 version = "3.0.0-beta.1"
-source = "git+https://github.com/actix/actix-web?branch=fix/http_message_limit#58a4df3bbd4435e74cf062a7a0e3eead03713ac9"
+source = "git+https://github.com/actix/actix-web?branch=master#51e54dac8b18ea0ac0b1d55f6a9d8af903e0e811"
 dependencies = [
  "actix-codec",
  "actix-rt",
@@ -220,7 +220,7 @@ dependencies = [
 [[package]]
 name = "actix-web"
 version = "4.0.0-beta.1"
-source = "git+https://github.com/actix/actix-web?branch=fix/http_message_limit#58a4df3bbd4435e74cf062a7a0e3eead03713ac9"
+source = "git+https://github.com/actix/actix-web?branch=master#51e54dac8b18ea0ac0b1d55f6a9d8af903e0e811"
 dependencies = [
  "actix-codec",
  "actix-http",
@@ -426,27 +426,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "async-stream"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3670df70cbc01729f901f94c887814b3c68db038aad1329a418bae178bc5295c"
-dependencies = [
- "async-stream-impl",
- "futures-core",
-]
-
-[[package]]
-name = "async-stream-impl"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a3548b8efc9f8e8a5a0a2808c5bd8451a9031b9e5b879a79590304ae928b0a70"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "async-trait"
 version = "0.1.42"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -486,7 +465,7 @@ checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 [[package]]
 name = "awc"
 version = "3.0.0-beta.1"
-source = "git+https://github.com/actix/actix-web?branch=fix/http_message_limit#58a4df3bbd4435e74cf062a7a0e3eead03713ac9"
+source = "git+https://github.com/actix/actix-web?branch=master#51e54dac8b18ea0ac0b1d55f6a9d8af903e0e811"
 dependencies = [
  "actix-codec",
  "actix-http",
@@ -569,9 +548,9 @@ checksum = "39092a32794787acd8525ee150305ff051b0aa6cc2abaf193924f5ab05425f39"
 
 [[package]]
 name = "bumpalo"
-version = "3.5.0"
+version = "3.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f07aa6688c702439a1be0307b6a94dffe1168569e45b9500c1372bc580740d59"
+checksum = "099e596ef14349721d9016f6b80dd3419ea1bf289ab9b44df8e4dfd3a005d5d9"
 
 [[package]]
 name = "byteorder"
@@ -753,9 +732,9 @@ dependencies = [
 
 [[package]]
 name = "data-encoding"
-version = "2.3.1"
+version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "993a608597367c6377b258c25d7120740f00ed23a2252b729b1932dd7866f908"
+checksum = "3ee2393c4a91429dffb4bedf19f4d6abf27d8a732c8ce4980305d782e5426d57"
 
 [[package]]
 name = "derive_more"
@@ -995,7 +974,7 @@ checksum = "c9495705279e7140bf035dde1f6e750c162df8b625267cd52cc44e0b156732c8"
 dependencies = [
  "cfg-if 1.0.0",
  "libc",
- "wasi 0.10.1+wasi-snapshot-preview1",
+ "wasi 0.10.2+wasi-snapshot-preview1",
 ]
 
 [[package]]
@@ -1220,9 +1199,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.82"
+version = "0.2.84"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89203f3fba0a3795506acaad8ebce3c80c0af93f994d5a1d7a0b1eeb23271929"
+checksum = "1cca32fa0182e8c0989459524dc356b8f2b5c10f1b9eb521b7d182c03cf8c5ff"
 
 [[package]]
 name = "libsqlite3-sys"
@@ -1805,7 +1784,6 @@ version = "1.0.61"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4fceb2595057b6891a4ee808f70054bd2d12f0e97f1cbb78689b59f676df325a"
 dependencies = [
- "indexmap",
  "itoa",
  "ryu",
  "serde",
@@ -1825,9 +1803,9 @@ dependencies = [
 
 [[package]]
 name = "sha-1"
-version = "0.9.2"
+version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce3cdf1b5e620a498ee6f2a171885ac7e22f0e12089ec4b3d22b84921792507c"
+checksum = "f4b312c3731e3fe78a185e6b9b911a7aa715b8e31cce117975219aab2acf285d"
 dependencies = [
  "block-buffer",
  "cfg-if 1.0.0",
@@ -1844,9 +1822,9 @@ checksum = "2579985fda508104f7587689507983eadd6a6e84dd35d6d115361f530916fa0d"
 
 [[package]]
 name = "sha2"
-version = "0.9.2"
+version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e7aab86fe2149bad8c507606bdb3f4ef5e7b2380eb92350f56122cca72a42a8"
+checksum = "fa827a14b29ab7f44778d14a88d3cb76e949c45083f7dbfa507d0cb699dc12de"
 dependencies = [
  "block-buffer",
  "cfg-if 1.0.0",
@@ -1909,7 +1887,7 @@ dependencies = [
 [[package]]
 name = "sqlx"
 version = "0.4.2"
-source = "git+https://github.com/launchbadge/sqlx.git#af7f2594457e991fd84a97a2170f79801fbdf1df"
+source = "git+https://github.com/launchbadge/sqlx.git#31abe22e348d6ac668c140de32612f0930c2abec"
 dependencies = [
  "sqlx-core",
  "sqlx-macros",
@@ -1918,7 +1896,7 @@ dependencies = [
 [[package]]
 name = "sqlx-core"
 version = "0.4.2"
-source = "git+https://github.com/launchbadge/sqlx.git#af7f2594457e991fd84a97a2170f79801fbdf1df"
+source = "git+https://github.com/launchbadge/sqlx.git#31abe22e348d6ac668c140de32612f0930c2abec"
 dependencies = [
  "ahash 0.6.3",
  "atoi",
@@ -1960,17 +1938,14 @@ dependencies = [
 [[package]]
 name = "sqlx-macros"
 version = "0.4.2"
-source = "git+https://github.com/launchbadge/sqlx.git#af7f2594457e991fd84a97a2170f79801fbdf1df"
+source = "git+https://github.com/launchbadge/sqlx.git#31abe22e348d6ac668c140de32612f0930c2abec"
 dependencies = [
  "dotenv",
  "either",
  "futures",
  "heck",
- "once_cell",
  "proc-macro2",
  "quote",
- "serde",
- "serde_json",
  "sha2",
  "sqlx-core",
  "sqlx-rt",
@@ -1981,7 +1956,7 @@ dependencies = [
 [[package]]
 name = "sqlx-rt"
 version = "0.2.0"
-source = "git+https://github.com/launchbadge/sqlx.git#af7f2594457e991fd84a97a2170f79801fbdf1df"
+source = "git+https://github.com/launchbadge/sqlx.git#31abe22e348d6ac668c140de32612f0930c2abec"
 dependencies = [
  "actix-rt",
  "actix-threadpool",
@@ -2199,9 +2174,9 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokio"
-version = "1.1.0"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8efab2086f17abcddb8f756117665c958feee6b2e39974c2f1600592ab3a4195"
+checksum = "6714d663090b6b0acb0fa85841c6d66233d150cdb2602c8f9b8abb03370beb3f"
 dependencies = [
  "autocfg",
  "bytes 1.0.1",
@@ -2240,18 +2215,16 @@ dependencies = [
 
 [[package]]
 name = "tokio-util"
-version = "0.6.2"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "feb971a26599ffd28066d387f109746df178eff14d5ea1e235015c5601967a4b"
+checksum = "ebb7cb2f00c5ae8df755b252306272cd1790d39728363936e01827e11f0b017b"
 dependencies = [
- "async-stream",
  "bytes 1.0.1",
  "futures-core",
  "futures-sink",
  "log",
  "pin-project-lite",
  "tokio",
- "tokio-stream",
 ]
 
 [[package]]
@@ -2486,9 +2459,9 @@ checksum = "cccddf32554fecc6acb585f82a32a72e28b48f8c4c1883ddfeeeaa96f7d8e519"
 
 [[package]]
 name = "wasi"
-version = "0.10.1+wasi-snapshot-preview1"
+version = "0.10.2+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93c6c3420963c5c64bca373b25e77acb562081b9bb4dd5bb864187742186cea9"
+checksum = "fd6fbd9a79829dd1ad0cc20627bf1ed606756a7f77edff7b66b7064f9cb327c6"
 
 [[package]]
 name = "wasm-bindgen"

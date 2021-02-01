@@ -5,6 +5,7 @@ use crate::{
 
 use actix_web::web::{Bytes, Data};
 use semver::Version;
+use serde_json::to_string;
 use sqlx::{sqlite::SqliteQueryResult, Error, SqlitePool};
 use tokio::fs::{remove_file, write};
 
@@ -25,6 +26,7 @@ pub fn validate_data(package: &Package) -> bool {
         && package.manifest.version.to_string().len() <= 12
         && package.manifest.bot_version.to_string().len() <= 50
         && package.manifest.bot_type.to_string().len() <= 15
+        && package.manifest.requires.len() < 100
         && package
             .manifest
             .name
@@ -40,7 +42,7 @@ pub async fn get_package_with_version(
     let version_str = version.to_string();
 
     let data: PackageManifestDb = sqlx::query_as(
-        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name", v."github", p."owner" FROM versions v JOIN packages p ON (v."package"=p."id") WHERE p."name"=? AND v."version"=?;"#,
+        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name", v."github", v."requires", p."owner" FROM versions v JOIN packages p ON (v."package"=p."id") WHERE p."name"=? AND v."version"=?;"#,
     ).bind(&name).bind(&version_str).fetch_one(&**pool).await?;
 
     Ok(data)
@@ -51,7 +53,7 @@ pub async fn get_latest_package(
     name: &str,
 ) -> Result<PackageManifestDb, Error> {
     let data: PackageManifestDb = sqlx::query_as(
-        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name", v."github", p."owner" FROM versions v JOIN packages p ON (v."package"=p."id") WHERE p."name"=? ORDER BY v."version" DESC LIMIT 1;"#,
+        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name", v."github", v."requires", p."owner" FROM versions v JOIN packages p ON (v."package"=p."id") WHERE p."name"=? ORDER BY v."version" DESC LIMIT 1;"#,
     ).bind(&name).fetch_one(&**pool).await?;
 
     Ok(data)
@@ -62,7 +64,7 @@ pub async fn get_package_versions(
     name: &str,
 ) -> Result<Vec<PackageManifestDb>, Error> {
     let data: Vec<PackageManifestDb> = sqlx::query_as(
-        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name", v."github", p."owner" FROM versions v JOIN packages p ON (v."package"=p."id") WHERE p."name"=? ORDER BY v."version" DESC;"#,
+        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name", v."github", v."requires", p."owner" FROM versions v JOIN packages p ON (v."package"=p."id") WHERE p."name"=? ORDER BY v."version" DESC;"#,
     ).bind(&name).fetch_all(&**pool).await?;
 
     Ok(data)
@@ -70,7 +72,7 @@ pub async fn get_package_versions(
 
 pub async fn get_all_packages(pool: Data<SqlitePool>) -> Result<Vec<PackageManifestDb>, Error> {
     let data: Vec<PackageManifestDb> = sqlx::query_as(
-        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name", v."github", p."owner" FROM versions v JOIN packages p ON (v."package"=p."id") ORDER BY v."package", v."version" DESC;"#,
+        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name", v."github", v."requires", p."owner" FROM versions v JOIN packages p ON (v."package"=p."id") ORDER BY v."package", v."version" DESC;"#,
     ).fetch_all(&**pool).await?;
 
     Ok(data)
@@ -78,7 +80,7 @@ pub async fn get_all_packages(pool: Data<SqlitePool>) -> Result<Vec<PackageManif
 
 pub async fn get_latest_packages(pool: Data<SqlitePool>) -> Result<Vec<PackageManifestDb>, Error> {
     let data: Vec<PackageManifestDb> = sqlx::query_as(
-        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name", v."github", p."owner" FROM versions v JOIN packages p ON (v."package"=p."id") GROUP BY v."package", v."bot_type" HAVING MAX(v."version");"#,
+        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name", v."github", v."requires", p."owner" FROM versions v JOIN packages p ON (v."package"=p."id") GROUP BY v."package", v."bot_type" HAVING MAX(v."version");"#,
     ).fetch_all(&**pool).await?;
 
     Ok(data)
@@ -90,7 +92,7 @@ pub async fn get_package_by_repo(
     owner: i64,
 ) -> Result<Option<PackageManifestDb>, Error> {
     let data: Option<PackageManifestDb> = sqlx::query_as(
-        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name", v."github", p."owner" FROM versions v JOIN packages p ON (v."package"=p."id") WHERE v."github"=? AND p."owner"=? ORDER BY v."id" DESC LIMIT 1;"#,
+        r#"SELECT v."description", v."short_description", v."author", v."version", v."bot_version", v."bot_type", p."name", v."github", v."requires", p."owner" FROM versions v JOIN packages p ON (v."package"=p."id") WHERE v."github"=? AND p."owner"=? ORDER BY v."id" DESC LIMIT 1;"#,
     ).bind(github).bind(owner).fetch_optional(&**pool).await?;
 
     Ok(data)
@@ -105,6 +107,7 @@ pub async fn create_package(
     let version = package.manifest.version.to_string();
     let bot_version = package.manifest.bot_version.to_string();
     let bot_type = package.manifest.bot_type.to_string();
+    let requires = to_string(&package.manifest.requires).unwrap();
     let path = Path::new("data").join(&format!(
         "{}-{}.zip",
         &package.manifest.name, &package.manifest.version
@@ -143,7 +146,7 @@ pub async fn create_package(
         .await?;
 
     sqlx::query(
-        r#"INSERT INTO versions ("package", "description", "short_description", "version", "author", "bot_type", "bot_version", "github") VALUES (?, ?, ?, ?, ?, ?, ?, ?);"#,
+        r#"INSERT INTO versions ("package", "description", "short_description", "version", "author", "bot_type", "bot_version", "github", "requires") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);"#,
     )
         .bind(pkg_id)
         .bind(package.description)
@@ -153,6 +156,7 @@ pub async fn create_package(
         .bind(bot_type)
         .bind(bot_version)
         .bind(package.manifest.github)
+        .bind(requires)
         .execute(&**pool)
         .await
 }

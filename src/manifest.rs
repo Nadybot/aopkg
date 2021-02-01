@@ -5,6 +5,7 @@ use sqlx::{ColumnIndex, Decode, Error as SqlxError, FromRow, Row, Type};
 use toml::{de::Error, from_str};
 
 use std::{
+    collections::HashMap,
     convert::TryFrom,
     fmt::{Display, Formatter, Result as FmtResult},
 };
@@ -51,6 +52,14 @@ pub struct PackageManifest {
     pub bot_type: BotType,
     pub bot_version: VersionReq,
     pub github: Option<String>,
+    #[serde(default)]
+    pub requires: HashMap<String, VersionReq>,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct Requirement {
+    pub name: String,
+    pub version: VersionReq,
 }
 
 #[derive(Serialize)]
@@ -64,6 +73,7 @@ pub struct PackageManifestDb {
     pub bot_type: BotType,
     pub bot_version: VersionReq,
     pub github: Option<String>,
+    pub requires: Vec<Requirement>,
 }
 
 #[derive(FromRow, Decode)]
@@ -90,6 +100,13 @@ where
         let bot_version: String = row.try_get("bot_version")?;
         let github: Option<String> = row.try_get("github")?;
         let owner: i64 = row.try_get("owner")?;
+        let requires_str: String = row.try_get("requires")?;
+        let requires_map: HashMap<String, VersionReq> =
+            serde_json::from_str(&requires_str).unwrap();
+        let requires = requires_map
+            .into_iter()
+            .map(|(name, version)| Requirement { name, version })
+            .collect();
 
         Ok(Self {
             name,
@@ -101,6 +118,7 @@ where
             bot_type: BotType::try_from(bot_type).unwrap(),
             bot_version: VersionReq::parse(&bot_version).unwrap(),
             github,
+            requires,
         })
     }
 }
@@ -135,6 +153,7 @@ fn test_loads_valid() {
         bot_type: BotType::Nadybot,
         bot_version: VersionReq::parse("^5.0.0").unwrap(), // Op is not exposed, cannot hardcode
         github: None,
+        requires: HashMap::new(),
     };
     assert_eq!(load_package_manifest(input).unwrap(), expected);
 }

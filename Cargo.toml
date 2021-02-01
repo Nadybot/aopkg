@@ -28,10 +28,10 @@ tokio = { version = "1.1", default-features = false }
 zip = "0.5"
 
 [patch.crates-io]
-awc = { git = "https://github.com/actix/actix-web", branch = "fix/http_message_limit" }
-actix-files = { git = "https://github.com/actix/actix-web", branch = "fix/http_message_limit" }
-actix-http = { git = "https://github.com/actix/actix-web", branch = "fix/http_message_limit" }
-actix-web = { git = "https://github.com/actix/actix-web", branch = "fix/http_message_limit" }
+awc = { git = "https://github.com/actix/actix-web", branch = "master" }
+actix-files = { git = "https://github.com/actix/actix-web", branch = "master" }
+actix-http = { git = "https://github.com/actix/actix-web", branch = "master" }
+actix-web = { git = "https://github.com/actix/actix-web", branch = "master" }
 
 [profile.release]
 codegen-units = 1

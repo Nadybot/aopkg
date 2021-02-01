@@ -17,4 +17,8 @@ version = "0.1.0"                  # Any semantic version number.
 author = "Nadyita"                 # Any string. Maximum 30 characters.
 bot_type = "Nadybot"               # Either "Nadybot", "Tyrbot", "Budabot" or "BeBot".
 bot_version = "^5.0.0"             # Semantic version requirement of the bot.
+github = "Nadybot/Package-Name"    # GitHub repository (optional). Username/Reponame format.
+
+[requires]                         # Optional. List of dependencies with version.
+ext-openssl = "*"                  # For example the PHP openssl extension in any version.
 ```
