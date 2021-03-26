@@ -1,8 +1,8 @@
 use actix_web::{
-    client::Client,
     web::{Bytes, Data},
     Error,
 };
+use awc::Client;
 use log::debug;
 use serde::Deserialize;
 
@@ -62,33 +62,16 @@ pub async fn get_latest_release(repo: &str, client: Data<Client>) -> Result<Byte
         };
         debug!("Getting webhook zip from {}", url);
 
-        let resp = client
+        let bytes = client
             .get(url)
             .insert_header(("User-Agent", "aopkg"))
             .send()
+            .await?
+            .body()
+            .limit(15728640)
             .await?;
-        let location = resp.headers().get("Location");
 
-        debug!(
-            "Got response: {:?} ({}) with redirect to {:?}",
-            resp,
-            resp.status(),
-            location
-        );
-
-        if let Some(url) = location {
-            let bytes = client
-                .get(url.to_str().unwrap())
-                .insert_header(("User-Agent", "aopkg"))
-                .send()
-                .await?
-                .body()
-                .limit(15728640)
-                .await?;
-            Ok(bytes)
-        } else {
-            Err(Error::from(()))
-        }
+        Ok(bytes)
     } else {
         Err(Error::from(()))
     }

@@ -1,4 +1,5 @@
-use actix_web::{client::Client, web::Data, Error};
+use actix_web::{web::Data, Error};
+use awc::Client;
 use lazy_static::lazy_static;
 use serde::Deserialize;
 

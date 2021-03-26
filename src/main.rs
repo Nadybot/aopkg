@@ -1,10 +1,10 @@
 use actix_files::{Files, NamedFile};
 use actix_session::{CookieSession, Session};
 use actix_web::{
-    client::Client, get, middleware, post, web, App, HttpRequest, HttpResponse, HttpServer,
-    Responder,
+    get, middleware, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder,
 };
 use askama::Template;
+use awc::Client;
 use log::debug;
 use semver::Version;
 use serde_json::to_string_pretty;
@@ -338,7 +338,9 @@ async fn main() -> std::io::Result<()> {
     m.run(&pool).await.expect("Migration failed");
 
     HttpServer::new(move || {
-        let client = Client::new();
+        let client = Client::builder()
+            .wrap(awc::middleware::Redirect::new())
+            .finish();
 
         App::new()
             .data(pool.clone())
