@@ -261,7 +261,7 @@ async fn redirected_back(
 ) -> impl Responder {
     let access_token = oauth::get_access_token(&code.code, client.clone()).await?;
     let user_id = oauth::get_user(&access_token, client).await?;
-    session.set("id", user_id)?;
+    session.insert("id", user_id)?;
 
     HttpResponse::Found().append_header(("Location", "/")).await
 }

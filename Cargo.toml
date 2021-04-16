@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 actix-files = "0.6.0-beta.3"
-actix-session = { git = "https://github.com/fakeshadow/actix-extras.git", branch = "tokio1.0" }
+actix-session = "0.5.0-beta.1"
 actix-web = { version = "4.0.0-beta.4", default-features = false }
 awc = { version = "3.0.0-beta.3", default-features = false, features = ["rustls"] }
 askama = "0.10"
