@@ -129,7 +129,7 @@ pub fn load_package_manifest(input: &str) -> Result<PackageManifest, Error> {
 
 #[test]
 fn test_loads_valid() {
-    use semver::AlphaNumeric;
+    use semver::{BuildMetadata, Prerelease};
 
     let input = r#"
     name = "EXPORT_MODULE"
@@ -146,8 +146,8 @@ fn test_loads_valid() {
             major: 1,
             minor: 0,
             patch: 0,
-            pre: vec![AlphaNumeric(String::from("pre"))],
-            build: vec![],
+            pre: Prerelease::new("pre").unwrap(),
+            build: BuildMetadata::EMPTY,
         },
         author: String::from("Nadyita <nadyita@hodorraid.org>"),
         bot_type: BotType::Nadybot,

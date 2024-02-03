@@ -1,4 +1,4 @@
-use actix_web::{web::Data, Error};
+use actix_web::{error::ErrorInternalServerError, web::Data, Error};
 use awc::Client;
 use lazy_static::lazy_static;
 use serde::Deserialize;
@@ -42,9 +42,12 @@ pub async fn get_access_token(code: &str, client: Data<Client>) -> Result<String
         .get(access_token_url(code))
         .insert_header(("Accept", "application/json"))
         .send()
-        .await?
+        .await
+        .map_err(ErrorInternalServerError)?
         .json()
-        .await?;
+        .await
+        .map_err(ErrorInternalServerError)?;
+
     Ok(data.access_token)
 }
 
@@ -55,8 +58,11 @@ pub async fn get_user(access_token: &str, client: Data<Client>) -> Result<i64, E
         .insert_header(("Accept", "application/vnd.github.v3+json"))
         .insert_header(("User-Agent", "aopkg"))
         .send()
-        .await?
+        .await
+        .map_err(ErrorInternalServerError)?
         .json()
-        .await?;
+        .await
+        .map_err(ErrorInternalServerError)?;
+
     Ok(data.id)
 }

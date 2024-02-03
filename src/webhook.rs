@@ -1,4 +1,5 @@
 use actix_web::{
+    error::ErrorInternalServerError,
     web::{Bytes, Data},
     Error,
 };
@@ -44,13 +45,15 @@ pub async fn get_latest_release(repo: &str, client: Data<Client>) -> Result<Byte
         .insert_header(("Accept", "application/vnd.github.v3+json"))
         .insert_header(("User-Agent", "aopkg"))
         .send()
-        .await?
+        .await
+        .map_err(ErrorInternalServerError)?
         .json()
-        .await?;
+        .await
+        .map_err(ErrorInternalServerError)?;
 
     debug!("Found releases for  {}: {:?}", repo, data);
 
-    if let Some(release) = data.get(0) {
+    if let Some(release) = data.first() {
         let asset = release
             .assets
             .iter()
@@ -66,13 +69,14 @@ pub async fn get_latest_release(repo: &str, client: Data<Client>) -> Result<Byte
             .get(url)
             .insert_header(("User-Agent", "aopkg"))
             .send()
-            .await?
+            .await
+            .map_err(ErrorInternalServerError)?
             .body()
             .limit(15728640)
             .await?;
 
         Ok(bytes)
     } else {
-        Err(Error::from(()))
+        Err(ErrorInternalServerError("could not find release").into())
     }
 }
