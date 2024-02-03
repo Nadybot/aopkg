@@ -12,7 +12,6 @@ use log::debug;
 use semver::Version;
 use serde_json::to_string_pretty;
 use sqlx::{
-    migrate::Migrator,
     sqlite::{SqliteConnectOptions, SqlitePoolOptions},
     SqlitePool,
 };
@@ -301,8 +300,6 @@ async fn main() -> std::io::Result<()> {
     }
     env_logger::init();
 
-    let m = Migrator::new(Path::new("./migrations")).await.unwrap();
-
     let conn_options = SqliteConnectOptions::from_str(&var("DATABASE_URL").unwrap())
         .unwrap()
         .collation("semver_collation", |a, b| {
@@ -314,9 +311,12 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("Could not connect to sqlite db");
 
-    m.run(&pool).await.expect("Migration failed");
+    sqlx::migrate!("./migrations")
+        .run(&pool)
+        .await
+        .expect("Migration failed");
 
-    let key = Key::from(
+    let key = Key::derive_from(
         var("COOKIE_SECRET")
             .expect("COOKIE_SECRET is not set")
             .as_bytes(),

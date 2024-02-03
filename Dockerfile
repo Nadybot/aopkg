@@ -16,6 +16,7 @@ RUN source $HOME/.cargo/env && \
 RUN rm -f target/release/deps/aopkg*
 COPY ./src ./src
 COPY ./templates ./templates
+COPY ./migrations ./migrations
 
 RUN source $HOME/.cargo/env && \
     cargo build --release && \
@@ -27,7 +28,6 @@ FROM scratch
 COPY --from=builder /usr/bin/dumb-init /dumb-init
 COPY --from=builder /aopkg /aopkg
 COPY static static
-COPY migrations migrations
 
 ENTRYPOINT ["./dumb-init", "--"]
 CMD ["./aopkg"]
