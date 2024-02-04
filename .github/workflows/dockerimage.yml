@@ -1,0 +1,29 @@
+name: Build and push docker image
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+jobs:
+  build:
+    name: Create docker image
+    runs-on: ubuntu-22.04
+    steps:
+        - name: Checkout sources
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+        - name: Login to registries
+          shell: bash
+          run: |
+            echo "${{ secrets.GHCR_PAT }}" | docker login -u nadyita --password-stdin ghcr.io
+        - name: Build and push the Docker image
+          shell: bash
+          run: |
+            docker buildx build \
+              --push \
+              --file Dockerfile \
+              --tag "ghcr.io/nadybot/aopkg:latest" \
+              --tag "ghcr.io/nadybot/aopkg:latest-$(date +'%Y%m%d-%H%M%S')" \
+              .
