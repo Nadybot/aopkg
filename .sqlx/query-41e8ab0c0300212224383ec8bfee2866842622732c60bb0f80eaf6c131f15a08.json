@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "DELETE FROM versions WHERE `package`=? AND `version`=?;",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "41e8ab0c0300212224383ec8bfee2866842622732c60bb0f80eaf6c131f15a08"
+}

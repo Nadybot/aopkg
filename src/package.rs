@@ -13,7 +13,10 @@ use tokio::{
 use toml::de::Error;
 use zip::{read::ZipFile, result::ZipError, ZipArchive};
 
-use std::io::{Cursor, Error as IOError, Read, Seek};
+use std::{
+    fmt::Display,
+    io::{Cursor, Error as IOError, Read, Seek},
+};
 
 #[derive(Debug, Serialize)]
 pub struct Package {
@@ -26,6 +29,16 @@ pub enum ParseError {
     ZipError(ZipError),
     TOMLError(Error),
     Timeout,
+}
+
+impl Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::ZipError(e) => e.fmt(f),
+            Self::TOMLError(e) => e.fmt(f),
+            Self::Timeout => f.write_str("Timeout while parsing ZIP"),
+        }
+    }
 }
 
 pub type ParseResult<T> = Result<T, ParseError>;

@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "\nINSERT INTO\n    requirements\n(\n    `package_version`,\n    `name`,\n    `version`\n) VALUES (?, ?, ?);",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "4921e24c65ed448555fbc5853a952e5752fdb99f653b2da67a20a23138bfd4c2"
+}

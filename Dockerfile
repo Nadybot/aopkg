@@ -17,6 +17,7 @@ RUN rm -f target/release/deps/aopkg*
 COPY ./src ./src
 COPY ./templates ./templates
 COPY ./migrations ./migrations
+COPY ./.sqlx ./.sqlx
 
 RUN source $HOME/.cargo/env && \
     cargo build --release && \

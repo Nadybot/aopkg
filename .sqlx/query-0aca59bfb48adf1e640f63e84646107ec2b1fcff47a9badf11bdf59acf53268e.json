@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "\nINSERT INTO\n    versions\n(\n    `package`,\n    `description`,\n    `short_description`,\n    `version`,\n    `author`,\n    `bot_version`,\n    `github`\n)\nVALUES (?, ?, ?, ?, ?, ?, ?);",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 7
+    },
+    "nullable": []
+  },
+  "hash": "0aca59bfb48adf1e640f63e84646107ec2b1fcff47a9badf11bdf59acf53268e"
+}

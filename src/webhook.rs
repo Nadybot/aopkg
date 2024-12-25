@@ -10,7 +10,6 @@ use serde::Deserialize;
 #[derive(Deserialize, Debug)]
 pub struct Asset {
     pub name: String,
-    pub url: String,
     pub browser_download_url: String,
     pub content_type: String,
 }
@@ -34,7 +33,6 @@ pub struct Repository {
 #[derive(Deserialize, Debug)]
 pub struct GithubReleaseWebhook {
     pub action: String,
-    pub release: Release,
     pub repository: Repository,
     pub sender: Sender,
 }

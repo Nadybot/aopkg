@@ -1,4 +1,4 @@
-use crate::manifest::PackageManifestDb;
+use crate::manifest::PackageVersion;
 
 use askama::Template;
 
@@ -6,7 +6,7 @@ use askama::Template;
 #[template(path = "index.html")]
 pub struct Index {
     pub logged_in: bool,
-    pub packages: Vec<PackageManifestDb>,
+    pub packages: Vec<PackageVersion>,
 }
 
 #[derive(Template)]
@@ -14,14 +14,14 @@ pub struct Index {
 pub struct PackagesTemplate<'a> {
     pub logged_in: bool,
     pub name: &'a str,
-    pub packages: Vec<PackageManifestDb>,
+    pub packages: Vec<PackageVersion>,
 }
 
 #[derive(Template)]
 #[template(path = "package.html")]
 pub struct PackageTemplate {
     pub logged_in: bool,
-    pub package: PackageManifestDb,
+    pub package: PackageVersion,
 }
 
 #[derive(Template)]

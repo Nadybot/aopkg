@@ -1,0 +1,24 @@
+{
+  "db_name": "MySQL",
+  "query": "\nSELECT EXISTS(\n    SELECT *\n    FROM packages AS p\n    JOIN versions AS v ON (p.`id`=v.`package`)\n    WHERE v.`github`=? AND p.`owner`=?\n) AS `package_exists`;",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "package_exists",
+        "type_info": {
+          "type": "Long",
+          "flags": "NOT_NULL | BINARY",
+          "max_size": 1
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "61b7acb1c48cff9a76c3e696e7b32f52f9ea52bfa332aa8740a9db45b8263a05"
+}

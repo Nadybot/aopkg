@@ -1,25 +1,29 @@
-use actix_files::{Files, NamedFile};
+use actix_files::Files;
 use actix_session::{storage::CookieSessionStore, Session, SessionMiddleware};
 use actix_web::{
     cookie::Key,
     get, middleware, post,
     web::{self, Data},
-    App, HttpRequest, HttpResponse, HttpServer, Responder,
+    App, HttpResponse, HttpServer, Responder,
 };
 use askama::Template;
-use awc::Client;
+use awc::{
+    http::header::{CONTENT_DISPOSITION, CONTENT_TYPE},
+    Client,
+};
+use futures_util::TryStreamExt;
 use log::debug;
+use s3::{creds::Credentials, Bucket, Region};
 use semver::Version;
 use serde_json::to_string_pretty;
 use sqlx::{
-    sqlite::{SqliteConnectOptions, SqlitePoolOptions},
-    SqlitePool,
+    mysql::{MySqlConnectOptions, MySqlPoolOptions},
+    MySqlPool,
 };
 
 use std::{
     env::{set_var, var},
     io::Cursor,
-    path::Path,
     str::FromStr,
 };
 
@@ -34,7 +38,8 @@ mod webhook;
 #[post("/upload")]
 async fn upload_package(
     payload: web::Bytes,
-    pool: web::Data<SqlitePool>,
+    pool: web::Data<MySqlPool>,
+    bucket: web::Data<Bucket>,
     session: Session,
 ) -> impl Responder {
     if let Ok(Some(id)) = session.get::<i64>("id") {
@@ -47,12 +52,16 @@ async fn upload_package(
                         .body("Package format OK, but parts too long");
                 }
 
-                return match db::create_package(pool, pkg, id, payload).await {
+                return match db::create_package(pool, bucket, pkg, id, payload).await {
                     Ok(_) => HttpResponse::Created().finish(),
-                    Err(_) => HttpResponse::Forbidden().finish(),
+                    Err(db::Error::Unauthorized) => HttpResponse::Forbidden().finish(),
+                    Err(e) => {
+                        log::error!("{e:?}");
+                        HttpResponse::InternalServerError().finish()
+                    }
                 };
             }
-            Err(e) => return HttpResponse::BadRequest().body(format!("{:?}", e)),
+            Err(e) => return HttpResponse::BadRequest().body(format!("{}", e)),
         };
     } else {
         HttpResponse::Unauthorized().finish()
@@ -62,7 +71,7 @@ async fn upload_package(
 #[get("/api/packages/{name}/{version}")]
 async fn get_package_data(
     path: web::Path<(String, Version)>,
-    pool: web::Data<SqlitePool>,
+    pool: web::Data<MySqlPool>,
 ) -> impl Responder {
     let package = db::get_package_with_version(pool, &path.0, &path.1).await;
 
@@ -77,7 +86,7 @@ async fn get_package_data(
 #[get("/api/packages/{name}")]
 async fn get_package_versions(
     name: web::Path<String>,
-    pool: web::Data<SqlitePool>,
+    pool: web::Data<MySqlPool>,
 ) -> impl Responder {
     let packages = db::get_package_versions(pool, &name)
         .await
@@ -93,7 +102,7 @@ async fn get_package_versions(
 }
 
 #[get("/api/packages")]
-async fn get_all_package_data(pool: web::Data<SqlitePool>) -> impl Responder {
+async fn get_all_package_data(pool: web::Data<MySqlPool>) -> impl Responder {
     let packages = db::get_all_packages(pool).await.expect("DB error");
     HttpResponse::Ok()
         .content_type("application/json")
@@ -101,16 +110,28 @@ async fn get_all_package_data(pool: web::Data<SqlitePool>) -> impl Responder {
 }
 
 #[get("/api/packages/{name}/{version}/download")]
-async fn download_package(req: HttpRequest, path: web::Path<(String, Version)>) -> impl Responder {
+async fn download_package(
+    path: web::Path<(String, Version)>,
+    bucket: web::Data<Bucket>,
+) -> impl Responder {
     if path
         .0
         .chars()
         .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
     {
-        let path = Path::new("data").join(format!("{}-{}.zip", path.0, path.1));
+        let path = format!("{}-{}.zip", path.0, path.1);
 
-        match NamedFile::open(path) {
-            Ok(f) => Ok(f.into_response(&req)),
+        match bucket.get_object_stream(&path).await {
+            Ok(f) => Ok(HttpResponse::Ok()
+                .insert_header((CONTENT_TYPE, "application/zip"))
+                .insert_header((
+                    CONTENT_DISPOSITION,
+                    format!("attachment; filename=\"{path}\""),
+                ))
+                .streaming(
+                    f.body_stream
+                        .try_filter_map(|frame| async move { Ok(frame.into_data().ok()) }),
+                )),
             Err(_) => HttpResponse::NotFound().await,
         }
     } else {
@@ -119,7 +140,7 @@ async fn download_package(req: HttpRequest, path: web::Path<(String, Version)>) 
 }
 
 #[get("/")]
-async fn package_list(pool: web::Data<SqlitePool>, session: Session) -> impl Responder {
+async fn package_list(pool: web::Data<MySqlPool>, session: Session) -> impl Responder {
     let packages = db::get_latest_packages(pool).await.expect("DB error");
     let logged_in = matches!(session.get::<i64>("id"), Ok(Some(_)));
     HttpResponse::Ok().content_type("text/html").body(
@@ -162,7 +183,7 @@ async fn upload_view(session: Session) -> impl Responder {
 #[get("/packages/{name}/{version}")]
 async fn show_package_data(
     path: web::Path<(String, Version)>,
-    pool: web::Data<SqlitePool>,
+    pool: web::Data<MySqlPool>,
     session: Session,
 ) -> impl Responder {
     let package = db::get_package_with_version(pool, &path.0, &path.1).await;
@@ -184,7 +205,7 @@ async fn show_package_data(
 #[get("/packages/{name}/latest")]
 async fn show_latest_package_data(
     name: web::Path<String>,
-    pool: web::Data<SqlitePool>,
+    pool: web::Data<MySqlPool>,
     session: Session,
 ) -> impl Responder {
     let package = db::get_latest_package(pool, &name).await;
@@ -206,7 +227,7 @@ async fn show_latest_package_data(
 #[get("/packages/{name}")]
 async fn show_package_version_data(
     name: web::Path<String>,
-    pool: web::Data<SqlitePool>,
+    pool: web::Data<MySqlPool>,
     session: Session,
 ) -> impl Responder {
     let packages = db::get_package_versions(pool, &name).await;
@@ -252,19 +273,21 @@ async fn redirected_back(
 async fn github_webhook(
     web::Json(data): web::Json<webhook::GithubReleaseWebhook>,
     client: web::Data<Client>,
-    pool: web::Data<SqlitePool>,
+    pool: web::Data<MySqlPool>,
+    bucket: web::Data<Bucket>,
 ) -> impl Responder {
     if data.action != "published" {
         debug!("{:?}: Not a publish release event, ignoring.", data);
         return HttpResponse::NoContent().finish();
     }
 
-    let db_pkg = db::get_package_by_repo(pool.clone(), data.repository.full_name, data.sender.id)
-        .await
-        .expect("DB error");
+    let package_exists =
+        db::package_exists_for_repo(pool.clone(), &data.repository.full_name, data.sender.id)
+            .await
+            .expect("DB error");
 
-    if let Some(p) = db_pkg {
-        if let Ok(payload) = webhook::get_latest_release(&p.github.unwrap(), client).await {
+    if package_exists {
+        if let Ok(payload) = webhook::get_latest_release(&data.repository.full_name, client).await {
             let cur = Cursor::new(payload.clone());
 
             match package::try_parse(cur).await {
@@ -274,7 +297,9 @@ async fn github_webhook(
                             .body("Package format OK, but parts too long");
                     }
 
-                    return match db::create_package(pool, pkg, p.owner, payload).await {
+                    return match db::create_package(pool, bucket, pkg, data.sender.id, payload)
+                        .await
+                    {
                         Ok(_) => HttpResponse::Created().finish(),
                         Err(_) => HttpResponse::Forbidden().finish(),
                     };
@@ -300,27 +325,61 @@ async fn main() -> std::io::Result<()> {
     }
     env_logger::init();
 
-    let conn_options = SqliteConnectOptions::from_str(&var("DATABASE_URL").unwrap())
-        .unwrap()
-        .collation("semver_collation", |a, b| {
-            Version::parse(a).unwrap().cmp(&Version::parse(b).unwrap())
-        });
+    let conn_options = MySqlConnectOptions::from_str(&var("DATABASE_URL").unwrap()).unwrap();
 
-    let pool = SqlitePoolOptions::new()
+    let pool = MySqlPoolOptions::new()
         .connect_with(conn_options)
         .await
-        .expect("Could not connect to sqlite db");
+        .expect("Could not connect to mariadb");
 
     sqlx::migrate!("./migrations")
         .run(&pool)
         .await
         .expect("Migration failed");
 
-    let key = Key::derive_from(
-        var("COOKIE_SECRET")
-            .expect("COOKIE_SECRET is not set")
-            .as_bytes(),
-    );
+    let Ok(secret) = var("COOKIE_SECRET") else {
+        log::error!("Missing COOKIE_SECRET environment variable");
+        return Ok(());
+    };
+    let key = Key::derive_from(secret.as_bytes());
+
+    let Ok(bucket_name) = var("S3_BUCKET_NAME") else {
+        log::error!("Missing s3 bucket name environment variable");
+        return Ok(());
+    };
+
+    let Ok(s3_region) = var("S3_REGION") else {
+        log::error!("Missing s3 region environment variable");
+        return Ok(());
+    };
+
+    let Ok(s3_endpoint) = var("S3_ENDPOINT") else {
+        log::error!("Missing s3 endpoint environment variable");
+        return Ok(());
+    };
+
+    let Ok(s3_secret_key) = var("S3_SECRET_KEY") else {
+        log::error!("Missing s3 secret key environment variable");
+        return Ok(());
+    };
+
+    let Ok(s3_access_key) = var("S3_ACCESS_KEY") else {
+        log::error!("Missing s3 access key environment variable");
+        return Ok(());
+    };
+
+    let region = Region::Custom {
+        region: s3_region,
+        endpoint: s3_endpoint,
+    };
+
+    let credentials =
+        Credentials::new(Some(&s3_access_key), Some(&s3_secret_key), None, None, None)
+            .expect("access key is set");
+
+    let bucket = Bucket::new(&bucket_name, region.clone(), credentials.clone())
+        .unwrap()
+        .with_path_style();
 
     HttpServer::new(move || {
         let client = Client::builder()
@@ -330,6 +389,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(Data::new(pool.clone()))
             .app_data(Data::new(client))
+            .app_data(Data::new(bucket.clone()))
             .app_data(web::PayloadConfig::new(15728640))
             .wrap(middleware::Logger::default())
             .wrap(SessionMiddleware::new(

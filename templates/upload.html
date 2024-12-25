@@ -35,7 +35,7 @@
                     document.getElementById("popup-here").innerHTML = `<div class="alert alert-danger" role="alert">You are not logged in.</div>`;
                 } else {
                     let content = await response.text();
-                    document.getElementById("popup-here").innerHTML = `<div class="alert alert-danger" role="alert">ZIP issue: ${content}</div>`;
+                    document.getElementById("popup-here").innerHTML = `<div class="alert alert-danger" role="alert">ZIP issue:<br><pre class="mt-2">${content}</pre></div>`;
                 }
             }
 

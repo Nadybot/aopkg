@@ -1,5 +1,3 @@
 /target
-/data/*.zip
-/aopkg.db*
 /test-files
 /.env

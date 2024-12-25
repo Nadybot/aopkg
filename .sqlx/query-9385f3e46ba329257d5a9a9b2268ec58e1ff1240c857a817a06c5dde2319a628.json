@@ -1,0 +1,44 @@
+{
+  "db_name": "MySQL",
+  "query": "\nSELECT\n    `package_version`,\n    `name`,\n    `version`\nFROM requirements\nWHERE `package_version`=?;",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "package_version",
+        "type_info": {
+          "type": "Long",
+          "flags": "NOT_NULL | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "max_size": 11
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | NO_DEFAULT_VALUE",
+          "max_size": 120
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "version",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | NO_DEFAULT_VALUE",
+          "max_size": 48
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "9385f3e46ba329257d5a9a9b2268ec58e1ff1240c857a817a06c5dde2319a628"
+}

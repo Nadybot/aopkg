@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO packages (`name`, `owner`) VALUES (?, ?);",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "e0b9246dccc68a5e1c7eb7434df033e4b850268639570b5df78ceeb2ee9cb345"
+}
