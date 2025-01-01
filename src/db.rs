@@ -397,22 +397,20 @@ pub async fn create_package(
     .fetch_optional(&**pool)
     .await?;
 
-    let pkg_id = {
-        if let Some(p) = pkg {
-            if p.owner != owner_id {
-                return Err(Error::Unauthorized);
-            }
-            p.id
-        } else {
-            sqlx::query!(
-                r#"INSERT INTO packages (`name`, `owner`) VALUES (?, ?);"#,
-                &package.manifest.name,
-                owner_id
-            )
-            .execute(&**pool)
-            .await?
-            .last_insert_id() as i64
+    let pkg_id = if let Some(p) = pkg {
+        if p.owner != owner_id {
+            return Err(Error::Unauthorized);
         }
+        p.id
+    } else {
+        sqlx::query!(
+            r#"INSERT INTO packages (`name`, `owner`) VALUES (?, ?);"#,
+            &package.manifest.name,
+            owner_id
+        )
+        .execute(&**pool)
+        .await?
+        .last_insert_id() as i64
     };
 
     sqlx::query!(

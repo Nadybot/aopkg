@@ -301,7 +301,11 @@ async fn github_webhook(
                         .await
                     {
                         Ok(_) => HttpResponse::Created().finish(),
-                        Err(_) => HttpResponse::Forbidden().finish(),
+                        Err(db::Error::Unauthorized) => HttpResponse::Forbidden().finish(),
+                        Err(e) => {
+                            log::error!("{e:?}");
+                            HttpResponse::InternalServerError().finish()
+                        }
                     };
                 }
                 Err(e) => {
